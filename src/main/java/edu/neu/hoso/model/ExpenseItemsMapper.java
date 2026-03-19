@@ -6,8 +6,6 @@ import org.apache.ibatis.annotations.*;
 import java.util.Date;
 import java.util.List;
 
-import jdk.nashorn.internal.objects.annotations.Setter;
-
 public interface ExpenseItemsMapper {
 
     int countByExample(ExpenseItemsExample example);

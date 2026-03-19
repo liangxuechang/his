@@ -3,7 +3,6 @@ package edu.neu.hoso.controller;
 import edu.neu.hoso.dto.ResultDTO;
 import edu.neu.hoso.model.*;
 import edu.neu.hoso.service.DispensingService;
-import org.omg.PortableInterceptor.INACTIVE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
