@@ -1,6 +1,7 @@
 package edu.neu.hoso.controller;
 
 import edu.neu.hoso.dto.ResultDTO;
+import edu.neu.hoso.dto.UserRequestDTO;
 import edu.neu.hoso.model.User;
 import edu.neu.hoso.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,51 +17,55 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    /**
+     * @title: insert
+     * @description: 插入用户（需要管理员权限）
+     * @param: requestDTO 包含操作员username、password和要插入的user信息
+     * @return: edu.neu.hoso.dto.ResultDTO<edu.neu.hoso.model.User>
+     */
     @RequestMapping("/insert")
-    public ResultDTO<User> insert(@RequestBody User user){
-        /**
-         *@title: insert
-         *@description: 插入用户
-         *@author: Mike
-         *@date: 2019-06-19 11:04
-         *@param: [user]
-         *@return: edu.neu.hoso.dto.ResultDTO<edu.neu.hoso.model.User>
-         *@throws:
-         */
+    public ResultDTO<User> insert(@RequestBody UserRequestDTO requestDTO){
         ResultDTO resultDTO = new ResultDTO();
         try {
-            userService.insert(user);
-            resultDTO.setData(user);
+            if (requestDTO == null || requestDTO.getUser() == null) {
+                resultDTO.setStatus("ERROR");
+                resultDTO.setMsg("参数错误：缺少用户信息");
+                return resultDTO;
+            }
+            userService.insertWithAuth(requestDTO.getUser(), requestDTO.getUsername(), requestDTO.getPassword());
+            resultDTO.setData(requestDTO.getUser());
             resultDTO.setStatus("OK");
             resultDTO.setMsg("插入用户成功！");
         } catch (Exception e) {
             e.printStackTrace();
             resultDTO.setStatus("ERROR");
-            resultDTO.setMsg("插入用户失败！");
+            resultDTO.setMsg("插入用户失败：" + e.getMessage());
         }
         return resultDTO;
     }
 
+    /**
+     * @title: delete
+     * @description: 删除用户（需要管理员权限）
+     * @param: requestDTO 包含操作员username、password和要删除的userId
+     * @return: edu.neu.hoso.dto.ResultDTO<edu.neu.hoso.model.User>
+     */
     @RequestMapping("/delete")
-    public ResultDTO<User> delete(Integer id){
-        /**
-         *@title: delete
-         *@description: 删除用户 经id
-         *@author: Mike
-         *@date: 2019-06-19 11:04
-         *@param: [id]
-         *@return: edu.neu.hoso.dto.ResultDTO<edu.neu.hoso.model.User>
-         *@throws:
-         */
+    public ResultDTO<User> delete(@RequestBody UserRequestDTO requestDTO){
         ResultDTO resultDTO = new ResultDTO();
         try {
-            userService.deleteById(id);
+            if (requestDTO == null || requestDTO.getUserId() == null) {
+                resultDTO.setStatus("ERROR");
+                resultDTO.setMsg("参数错误：缺少要删除的用户ID");
+                return resultDTO;
+            }
+            userService.deleteByIdWithAuth(requestDTO.getUserId(), requestDTO.getUsername(), requestDTO.getPassword());
             resultDTO.setStatus("OK");
             resultDTO.setMsg("删除用户成功！");
         } catch (Exception e) {
             e.printStackTrace();
             resultDTO.setStatus("ERROR");
-            resultDTO.setMsg("删除用户失败！");
+            resultDTO.setMsg("删除用户失败：" + e.getMessage());
         }
         return resultDTO;
     }

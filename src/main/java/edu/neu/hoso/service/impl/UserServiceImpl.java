@@ -1,5 +1,6 @@
 package edu.neu.hoso.service.impl;
 
+import edu.neu.hoso.dto.UserAuthDTO;
 import edu.neu.hoso.example.RoleExample;
 import edu.neu.hoso.example.UserExample;
 import edu.neu.hoso.model.Role;
@@ -7,6 +8,7 @@ import edu.neu.hoso.model.RoleMapper;
 import edu.neu.hoso.model.User;
 import edu.neu.hoso.model.UserMapper;
 import edu.neu.hoso.service.UserService;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -276,5 +278,108 @@ public class UserServiceImpl implements UserService {
          */
         RoleExample roleExample = new RoleExample();
         return roleMapper.selectByExample(roleExample);
+    }
+
+    @Override
+    public UserAuthDTO authenticateUser(String username, String password) {
+        /**
+         *@title: authenticateUser
+         *@description: 根据用户名和密码验证用户
+         *@author: System
+         *@date: 2024
+         *@param: [username, password]
+         *@return: edu.neu.hoso.dto.UserAuthDTO
+         *@throws:
+         */
+        UserExample userExample = new UserExample();
+        UserExample.Criteria criteria = userExample.createCriteria();
+        criteria.andUserLoginnameEqualTo(username);
+        List<User> users = userMapper.selectByExample(userExample);
+        
+        if (users == null || users.isEmpty()) {
+            return new UserAuthDTO(false, null, "用户不存在");
+        }
+        
+        User user = users.get(0);
+        // 使用jBCrypt验证密码
+        if (user.getUserPassword() != null && BCrypt.checkpw(password, user.getUserPassword())) {
+            return new UserAuthDTO(true, user, "验证成功");
+        } else {
+            return new UserAuthDTO(false, null, "密码错误");
+        }
+    }
+
+    @Override
+    public boolean isAdmin(User user) {
+        /**
+         *@title: isAdmin
+         *@description: 检查用户是否为管理员角色(function_id=2)
+         *@author: System
+         *@date: 2024
+         *@param: [user]
+         *@return: boolean
+         *@throws:
+         */
+        if (user == null || user.getRoleId() == null) {
+            return false;
+        }
+        Role role = roleMapper.selectByPrimaryKey(user.getRoleId());
+        return role != null && role.getFunctionId() != null && role.getFunctionId() == 2;
+    }
+
+    @Override
+    public Integer insertWithAuth(User user, String operatorUsername, String operatorPassword) {
+        /**
+         *@title: insertWithAuth
+         *@description: 插入用户，密码使用bcrypt加密，需要管理员权限
+         *@author: System
+         *@date: 2024
+         *@param: [user, operatorUsername, operatorPassword]
+         *@return: java.lang.Integer
+         *@throws:
+         */
+        // 验证操作员身份
+        UserAuthDTO authResult = authenticateUser(operatorUsername, operatorPassword);
+        if (!authResult.isAuthenticated()) {
+            throw new RuntimeException("操作失败：" + authResult.getMessage());
+        }
+        
+        // 检查是否为管理员
+        if (!isAdmin(authResult.getUser())) {
+            throw new RuntimeException("操作失败：需要管理员权限");
+        }
+        
+        // 使用jBCrypt加密密码
+        if (user.getUserPassword() != null) {
+            user.setUserPassword(BCrypt.hashpw(user.getUserPassword(), BCrypt.gensalt()));
+        }
+        
+        userMapper.insert(user);
+        return user.getUserId();
+    }
+
+    @Override
+    public void deleteByIdWithAuth(Integer id, String operatorUsername, String operatorPassword) {
+        /**
+         *@title: deleteByIdWithAuth
+         *@description: 删除用户，需要管理员权限
+         *@author: System
+         *@date: 2024
+         *@param: [id, operatorUsername, operatorPassword]
+         *@return: void
+         *@throws:
+         */
+        // 验证操作员身份
+        UserAuthDTO authResult = authenticateUser(operatorUsername, operatorPassword);
+        if (!authResult.isAuthenticated()) {
+            throw new RuntimeException("操作失败：" + authResult.getMessage());
+        }
+        
+        // 检查是否为管理员
+        if (!isAdmin(authResult.getUser())) {
+            throw new RuntimeException("操作失败：需要管理员权限");
+        }
+        
+        userMapper.deleteByPrimaryKey(id);
     }
 }
