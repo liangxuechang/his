@@ -1,5 +1,6 @@
 package edu.neu.hoso.service;
 
+import edu.neu.hoso.dto.ResultDTO;
 import edu.neu.hoso.model.Role;
 import edu.neu.hoso.model.User;
 
@@ -30,4 +31,8 @@ public interface UserService {
     List<User> getUserByRole(Integer roleId);
     List<User> getAllUserWithRole();
     List<Role> getAllRole();
+    
+    ResultDTO<User> verifyUser(String username, String password);
+    
+    String encodePassword(String rawPassword);
 }

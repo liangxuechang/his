@@ -1,5 +1,6 @@
 package edu.neu.hoso.service.impl;
 
+import edu.neu.hoso.dto.ResultDTO;
 import edu.neu.hoso.example.RoleExample;
 import edu.neu.hoso.example.UserExample;
 import edu.neu.hoso.model.Role;
@@ -7,6 +8,7 @@ import edu.neu.hoso.model.RoleMapper;
 import edu.neu.hoso.model.User;
 import edu.neu.hoso.model.UserMapper;
 import edu.neu.hoso.service.UserService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -276,5 +278,62 @@ public class UserServiceImpl implements UserService {
          */
         RoleExample roleExample = new RoleExample();
         return roleMapper.selectByExample(roleExample);
+    }
+
+    @Override
+    public ResultDTO<User> verifyUser(String username, String password) {
+        /**
+         *@title: verifyUser
+         *@description: 验证用户登录信息，使用BCrypt进行密码校验
+         *@author: Assistant
+         *@date: 2026-03-21
+         *@param: [username, password]
+         *@return: ResultDTO<User> 包含验证结果和用户信息
+         *@throws:
+         */
+        ResultDTO<User> resultDTO = new ResultDTO<>();
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        
+        List<User> users = getUserByLoginname(username);
+        if (users == null || users.isEmpty()) {
+            resultDTO.setStatus("ERROR");
+            resultDTO.setMsg("用户不存在");
+            resultDTO.setData(null);
+            return resultDTO;
+        }
+        
+        User user = users.get(0);
+        String storedPassword = user.getUserPassword();
+        
+        boolean matches = passwordEncoder.matches(password, storedPassword);
+        
+        if (matches) {
+            Role role = roleMapper.selectByPrimaryKey(user.getRoleId());
+            user.setRole(role);
+            resultDTO.setStatus("OK");
+            resultDTO.setMsg("验证成功");
+            resultDTO.setData(user);
+        } else {
+            resultDTO.setStatus("ERROR");
+            resultDTO.setMsg("密码错误");
+            resultDTO.setData(null);
+        }
+        
+        return resultDTO;
+    }
+
+    @Override
+    public String encodePassword(String rawPassword) {
+        /**
+         *@title: encodePassword
+         *@description: 使用BCrypt加密密码
+         *@author: Assistant
+         *@date: 2026-03-21
+         *@param: [rawPassword]
+         *@return: java.lang.String 加密后的密码
+         *@throws:
+         */
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        return passwordEncoder.encode(rawPassword);
     }
 }
