@@ -1,5 +1,6 @@
 package edu.neu.hoso.service;
 
+import edu.neu.hoso.dto.UserValidationResult;
 import edu.neu.hoso.model.Role;
 import edu.neu.hoso.model.User;
 
@@ -30,4 +31,12 @@ public interface UserService {
     List<User> getUserByRole(Integer roleId);
     List<User> getAllUserWithRole();
     List<Role> getAllRole();
+
+    /**
+     * 根据用户名验证用户是否存在并校验密码
+     * @param username 用户名
+     * @param password 明文密码
+     * @return UserValidationResult 验证结果
+     */
+    UserValidationResult validateUser(String username, String password);
 }

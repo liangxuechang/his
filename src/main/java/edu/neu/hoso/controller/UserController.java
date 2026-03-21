@@ -1,12 +1,16 @@
 package edu.neu.hoso.controller;
 
 import edu.neu.hoso.dto.ResultDTO;
+import edu.neu.hoso.dto.UserValidationResult;
+import edu.neu.hoso.model.Role;
 import edu.neu.hoso.model.User;
 import edu.neu.hoso.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -16,19 +20,45 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
     @RequestMapping("/insert")
-    public ResultDTO<User> insert(@RequestBody User user){
+    public ResultDTO<User> insert(@RequestBody User user,
+                                   @RequestParam String username,
+                                   @RequestParam String password){
         /**
          *@title: insert
-         *@description: 插入用户
+         *@description: 插入用户（需要管理员权限）
          *@author: Mike
          *@date: 2019-06-19 11:04
-         *@param: [user]
+         *@param: [user, username, password]
          *@return: edu.neu.hoso.dto.ResultDTO<edu.neu.hoso.model.User>
          *@throws:
          */
         ResultDTO resultDTO = new ResultDTO();
         try {
+            // 验证操作用户身份
+            UserValidationResult validationResult = userService.validateUser(username, password);
+            if (!validationResult.isValid()) {
+                resultDTO.setStatus("ERROR");
+                resultDTO.setMsg("身份验证失败：" + validationResult.getMessage());
+                return resultDTO;
+            }
+
+            // 校验是否为管理员角色 (Function_id = 2)
+            User operator = validationResult.getUser();
+            // 需要通过roleId查询role信息获取Function_id
+            if (operator.getRoleId() == null || operator.getRoleId() != 2) {
+                resultDTO.setStatus("ERROR");
+                resultDTO.setMsg("无权操作：只有管理员可以进行此操作");
+                return resultDTO;
+            }
+
+            // 使用 bcrypt 加密用户密码
+            String encryptedPassword = passwordEncoder.encode(user.getUserPassword());
+            user.setUserPassword(encryptedPassword);
+
             userService.insert(user);
             resultDTO.setData(user);
             resultDTO.setStatus("OK");
@@ -42,18 +72,37 @@ public class UserController {
     }
 
     @RequestMapping("/delete")
-    public ResultDTO<User> delete(Integer id){
+    public ResultDTO<User> delete(@RequestParam Integer id,
+                                   @RequestParam String username,
+                                   @RequestParam String password){
         /**
          *@title: delete
-         *@description: 删除用户 经id
+         *@description: 删除用户 经id（需要管理员权限）
          *@author: Mike
          *@date: 2019-06-19 11:04
-         *@param: [id]
+         *@param: [id, username, password]
          *@return: edu.neu.hoso.dto.ResultDTO<edu.neu.hoso.model.User>
          *@throws:
          */
         ResultDTO resultDTO = new ResultDTO();
         try {
+            // 验证操作用户身份
+            UserValidationResult validationResult = userService.validateUser(username, password);
+            if (!validationResult.isValid()) {
+                resultDTO.setStatus("ERROR");
+                resultDTO.setMsg("身份验证失败：" + validationResult.getMessage());
+                return resultDTO;
+            }
+
+            // 校验是否为管理员角色 (Function_id = 2)
+            User operator = validationResult.getUser();
+            // 需要通过roleId查询role信息获取Function_id
+            if (operator.getRoleId() == null || operator.getRoleId() != 2) {
+                resultDTO.setStatus("ERROR");
+                resultDTO.setMsg("无权操作：只有管理员可以进行此操作");
+                return resultDTO;
+            }
+
             userService.deleteById(id);
             resultDTO.setStatus("OK");
             resultDTO.setMsg("删除用户成功！");

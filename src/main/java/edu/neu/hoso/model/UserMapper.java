@@ -73,4 +73,14 @@ public interface UserMapper {
     List<User> getUserByRole(Integer roleId);
 
     List<User> getAllUserWithRole();
+
+    @Select({
+        "select",
+        "User_ID, User_loginName, User_password, Role_ID, User_Name, Department_ID, User_Title_ID, ",
+        "User_Gender, User_Status, User_Scheduling_LimitCount",
+        "from user",
+        "where User_loginName = #{loginname,jdbcType=VARCHAR}"
+    })
+    @ResultMap("BaseResultMap")
+    List<User> getUserByLoginname(String loginname);
 }

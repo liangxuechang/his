@@ -1,5 +1,6 @@
 package edu.neu.hoso.service.impl;
 
+import edu.neu.hoso.dto.UserValidationResult;
 import edu.neu.hoso.example.RoleExample;
 import edu.neu.hoso.example.UserExample;
 import edu.neu.hoso.model.Role;
@@ -7,6 +8,8 @@ import edu.neu.hoso.model.RoleMapper;
 import edu.neu.hoso.model.User;
 import edu.neu.hoso.model.UserMapper;
 import edu.neu.hoso.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -27,6 +30,9 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     RoleMapper roleMapper;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public Integer insert(User user) {
@@ -276,5 +282,34 @@ public class UserServiceImpl implements UserService {
          */
         RoleExample roleExample = new RoleExample();
         return roleMapper.selectByExample(roleExample);
+    }
+
+    @Override
+    public UserValidationResult validateUser(String username, String password) {
+        /**
+         *@title: validateUser
+         *@description: 根据用户名验证用户是否存在并校验密码
+         *@author: System
+         *@date: 2026-03-21
+         *@param: [username, password]
+         *@return: edu.neu.hoso.dto.UserValidationResult
+         *@throws:
+         */
+        if (username == null || password == null) {
+            return new UserValidationResult(false, null, "用户名或密码不能为空");
+        }
+
+        List<User> users = userMapper.getUserByLoginname(username);
+        if (users == null || users.isEmpty()) {
+            return new UserValidationResult(false, null, "用户不存在");
+        }
+
+        User user = users.get(0);
+        // 校验密码
+        if (passwordEncoder.matches(password, user.getUserPassword())) {
+            return new UserValidationResult(true, user, "验证成功");
+        } else {
+            return new UserValidationResult(false, null, "密码错误");
+        }
     }
 }
