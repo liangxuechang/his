@@ -1,0 +1,665 @@
+{
+  "info": {
+    "name": "HIS API Test Collection",
+    "description": "HIS医院信息管理系统接口测试集合",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080/hoso",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. 登录接口测试",
+      "item": [
+        {
+          "name": "TC-LOGIN-001 管理员正常登录",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/login/LoginUser?userLoginName=admin&password=admin123",
+              "host": ["{{base_url}}"],
+              "path": ["login", "LoginUser"],
+              "query": [
+                {
+                  "key": "userLoginName",
+                  "value": "admin"
+                },
+                {
+                  "key": "password",
+                  "value": "admin123"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('状态码为200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('返回status为OK', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('OK');",
+                  "});",
+                  "",
+                  "pm.test('返回用户信息', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('user');",
+                  "    pm.expect(jsonData.data.user.userLoginname).to.eql('admin');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-LOGIN-002 医生用户正常登录",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/login/LoginUser?userLoginName=doctor001&password=123456",
+              "host": ["{{base_url}}"],
+              "path": ["login", "LoginUser"],
+              "query": [
+                {
+                  "key": "userLoginName",
+                  "value": "doctor001"
+                },
+                {
+                  "key": "password",
+                  "value": "123456"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('返回status为OK', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('OK');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-LOGIN-004 用户名为空登录",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/login/LoginUser?userLoginName=&password=123456",
+              "host": ["{{base_url}}"],
+              "path": ["login", "LoginUser"],
+              "query": [
+                {
+                  "key": "userLoginName",
+                  "value": ""
+                },
+                {
+                  "key": "password",
+                  "value": "123456"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('返回status为Error', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('Error');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-LOGIN-007 错误密码登录",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/login/LoginUser?userLoginName=admin&password=wrongpassword",
+              "host": ["{{base_url}}"],
+              "path": ["login", "LoginUser"],
+              "query": [
+                {
+                  "key": "userLoginName",
+                  "value": "admin"
+                },
+                {
+                  "key": "password",
+                  "value": "wrongpassword"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('返回status为Error', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('Error');",
+                  "});",
+                  "",
+                  "pm.test('提示用户名或密码错误', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.msg).to.eql('用户名或密码错误');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-LOGIN-008 不存在的用户登录",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/login/LoginUser?userLoginName=notexist&password=123456",
+              "host": ["{{base_url}}"],
+              "path": ["login", "LoginUser"],
+              "query": [
+                {
+                  "key": "userLoginName",
+                  "value": "notexist"
+                },
+                {
+                  "key": "password",
+                  "value": "123456"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('返回status为Error', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('Error');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-LOGIN-009 SQL注入测试",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/login/LoginUser?userLoginName=admin' OR '1'='1&password=123456",
+              "host": ["{{base_url}}"],
+              "path": ["login", "LoginUser"],
+              "query": [
+                {
+                  "key": "userLoginName",
+                  "value": "admin' OR '1'='1"
+                },
+                {
+                  "key": "password",
+                  "value": "123456"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('SQL注入不应成功', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('Error');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. 新增用户接口测试",
+      "item": [
+        {
+          "name": "TC-INSERT-001 正常新增用户-完整信息",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var timestamp = Date.now();",
+                  "pm.variables.set('timestamp', timestamp);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('状态码为200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('返回status为OK', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('OK');",
+                  "});",
+                  "",
+                  "pm.test('返回userId', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('userId');",
+                  "    pm.variables.set('user_id', jsonData.data.userId);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userLoginname\": \"testuser_{{timestamp}}\",\n    \"userPassword\": \"123456\",\n    \"roleId\": 3,\n    \"userName\": \"测试用户{{timestamp}}\",\n    \"departmentId\": 1,\n    \"userTitleId\": 9,\n    \"userGender\": \"男\",\n    \"userStatus\": \"ACTIVE\",\n    \"userSchedulingLimitcount\": 50\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/insert",
+              "host": ["{{base_url}}"],
+              "path": ["user", "insert"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-INSERT-002 正常新增用户-必填项",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var timestamp = Date.now();",
+                  "pm.variables.set('timestamp', timestamp);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('返回status为OK', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('OK');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userLoginname\": \"minimal_{{timestamp}}\",\n    \"userPassword\": \"123456\",\n    \"roleId\": 3,\n    \"userName\": \"最小字段用户\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/insert",
+              "host": ["{{base_url}}"],
+              "path": ["user", "insert"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "TC-INSERT-005 用户名为空新增",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userLoginname\": \"\",\n    \"userPassword\": \"123456\",\n    \"roleId\": 3,\n    \"userName\": \"测试用户\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/insert",
+              "host": ["{{base_url}}"],
+              "path": ["user", "insert"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('应返回ERROR', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('ERROR');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-INSERT-006 密码为空新增",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userLoginname\": \"testuser_nopwd\",\n    \"userPassword\": \"\",\n    \"roleId\": 3,\n    \"userName\": \"测试用户\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/insert",
+              "host": ["{{base_url}}"],
+              "path": ["user", "insert"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('应返回ERROR', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('ERROR');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-INSERT-010 角色ID不存在",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userLoginname\": \"testuser_invalid_role\",\n    \"userPassword\": \"123456\",\n    \"roleId\": 999,\n    \"userName\": \"测试用户\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/insert",
+              "host": ["{{base_url}}"],
+              "path": ["user", "insert"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('应返回ERROR', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('ERROR');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. 删除用户接口测试",
+      "item": [
+        {
+          "name": "TC-DELETE-001 正常删除用户",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/delete?id={{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["user", "delete"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{user_id}}"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('返回status为OK', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('OK');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-DELETE-003 ID为空删除",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/delete",
+              "host": ["{{base_url}}"],
+              "path": ["user", "delete"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('应返回ERROR', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('ERROR');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-DELETE-005 ID为0删除",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/delete?id=0",
+              "host": ["{{base_url}}"],
+              "path": ["user", "delete"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('应返回ERROR', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('ERROR');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-DELETE-008 删除不存在的用户",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/delete?id=99999",
+              "host": ["{{base_url}}"],
+              "path": ["user", "delete"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "99999"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('应返回ERROR提示用户不存在', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('ERROR');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. 查询用户接口测试",
+      "item": [
+        {
+          "name": "根据ID查询用户",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/getUserById?id=1",
+              "host": ["{{base_url}}"],
+              "path": ["user", "getUserById"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('返回status为OK', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('OK');",
+                  "});",
+                  "",
+                  "pm.test('返回用户数据', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('userId');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "查询所有用户",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/user/getAllUser",
+              "host": ["{{base_url}}"],
+              "path": ["user", "getAllUser"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('返回status为OK', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('OK');",
+                  "});",
+                  "",
+                  "pm.test('返回用户列表', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
